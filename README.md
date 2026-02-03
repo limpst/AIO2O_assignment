@@ -45,7 +45,7 @@
 ## 🚀 실행 방법
 
 ### 서버 실행
-````bash
+
 # FastAPI 서버 가동
 python main.py
 
@@ -56,7 +56,7 @@ python main.py
 
 
 ## 📰 뉴스 데이터 예시 (Internal Structure)
-````python
+
 # 실제 라이브 코드에서는 웹소켓을 통해 실시간 DB 적재
 test_news = [
     {"date": "2026-02-03", "time": "20:41", "title": "워시 연준 의장 후보, 적극적 금리 인하 추진 관측"},
