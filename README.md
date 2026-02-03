@@ -88,6 +88,12 @@
 2. 로컬 LLM 서버(Port: 8090) 실행 확인
 3. `python main.py` 실행 후 `http://localhost:8088/docs` 접속하여 API 테스트
 
+Request body:
+{
+  "question": "현재 캐빈 워시가 연준 의장으로 지명된 상황에 한국 옵션 시장에 미치는 영향은?",
+
+}
+
 (참고) 데이터 소스
 금융 뉴스: LS 증권 Open API 기반 WebSocket 수신: https://openapi.ls-sec.co.kr/howto-sample
 
@@ -96,10 +102,4 @@
 .\llama-server -m "V:\PythonProject\hf_cache_gguf\Llama-3.2-3B-Instruct-Q4_K_M.gguf" \
   --port 8090 --host 0.0.0.0 -ngl 99 -c 8196 -fa auto --embedding --pooling mean
 
-
-Request body:
-{
-  "question": "현재 캐빈 워시가 연준 의장으로 지명된 상황에 한국 옵션 시장에 미치는 영향은?",
-
-}
 
