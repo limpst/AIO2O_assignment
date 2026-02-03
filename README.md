@@ -51,9 +51,9 @@
 python main.py
 
 ## 📚 API Docs
-- `http://127.0.0.1:8088/docs` 접속 시 **Swagger** 인터페이스 확인 가능
+- http://127.0.0.1:8088/docs` 접속 시 **Swagger** 인터페이스 확인 가능
 
----
+
 
 ## 📰 뉴스 데이터 예시 (Internal Structure)
 ````python
