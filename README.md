@@ -88,6 +88,7 @@
 2. 로컬 LLM 서버(Port: 8090) 실행 확인
 3. `python main.py` 실행 후 `http://localhost:8088/docs` 접속하여 API 테스트
 
+[3] e.g. 
 Request body:
 {
   "question": "현재 캐빈 워시가 연준 의장으로 지명된 상황에 한국 옵션 시장에 미치는 영향은?",
