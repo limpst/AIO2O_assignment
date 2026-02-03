@@ -1,4 +1,4 @@
-# [기술 보고서] LLM Multi-Agent 기반 금융 RAG 및 포트폴리오 최적화 시스템
+# LLM Multi-Agent 기반 금융 RAG 및 포트폴리오 최적화 시스템
 
 ## 1. 시스템 개요 (Executive Summary)
 본 시스템은 뉴스 데이터와 매크로 시나리오를 결합하여 최적의 자산 배분 가이드를 제공하는 **Self-Improving Financial RAG 시스템**입니다.  
