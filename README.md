@@ -25,7 +25,7 @@
 
 ---
 
-### 2.3 Quant Engine & Optimization
+### 2.3 Quant Engine & Optimisation
 - **Parameter Tuning**: RAG로 추출된 과거 통계값(Expected Return, Volatility)을 LLM이 현재 시장 상황에 맞춰 보정
 - **SLSQP Optimizer**: `scipy.optimize`를 사용하여 다음 제약 조건을 만족하는 샤프 지수 기반 최적 포트폴리오 산출
   - 각 자산 비중 제한: 0~45%
@@ -58,7 +58,7 @@
 6. **Estimation**: LLM이 시나리오 통계치와 현재 지표를 결합해 기대수익률 및 공분산 추정  
    - $$\mu$$ (기대수익률), $$\Sigma$$ (공분산)
 7. **Optimization**: SLSQP 알고리즘으로 최적 자산 비중 산출  
-   - $$w^*$$
+   - $$w$$
 8. **Output**: 최종 투자 뷰(Manager View) 및 포트폴리오 가이드 반환
 
 ---
