@@ -401,7 +401,7 @@ workflow_app = workflow.compile()
 # ---------------------------------------------------------
 # 6. FastAPI 서버 구축
 # ---------------------------------------------------------
-api_app = FastAPI(title="AIO2O Self-Improving Financial RAG API")
+api_app = FastAPI(title="Test, Self-Improving Financial RAG API")
 
 
 class AnalyzeRequest(BaseModel):
