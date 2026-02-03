@@ -20,6 +20,9 @@ from langgraph.graph import StateGraph, END
 # Optimization
 from scipy.optimize import minimize
 
+import time # 성능 측정을 위해 추가
+from collections import deque # 통계 저장을 위해 추가
+
 # ---------------------------------------------------------
 # 1. 환경 설정 및 LLM 초기화
 # ---------------------------------------------------------
@@ -88,6 +91,32 @@ scenario_vs = _build_scenario_vectorstore()
 
 
 # ---------------------------------------------------------
+# 0. 성능 통계 저장소 (In-memory)
+# ---------------------------------------------------------
+class PerformanceTracker:
+    def __init__(self, window_size=100):
+        self.history = deque(maxlen=window_size)
+
+    def add_metric(self, data: dict):
+        self.history.append(data)
+
+    def get_stats(self):
+        if not self.history: return {}
+        avg_latency = sum(d['latency'] for d in self.history) / len(self.history)
+        avg_score = sum(d['eval_score'] for d in self.history) / len(self.history)
+        total_retries = sum(d['retry_count'] for d in self.history)
+        return {
+            "avg_latency_ms": round(avg_latency, 2),
+            "avg_eval_score": round(avg_score, 2),
+            "total_requests": len(self.history),
+            "retry_rate": round(total_retries / len(self.history), 2)
+        }
+
+
+tracker = PerformanceTracker()
+
+
+# ---------------------------------------------------------
 # 3. 상태(State) 및 출력 스키마 정의
 # ---------------------------------------------------------
 class QuantState(TypedDict, total=False):
@@ -113,6 +142,10 @@ class QuantState(TypedDict, total=False):
     eval_critique: str
     is_sufficient: bool
     retry_count: int
+
+    # 성능 측정용
+    start_time: float
+    node_timings: Dict[str, float]
 
     # Final Outputs
     manager_view: str
@@ -142,10 +175,31 @@ class EvalOutput(BaseModel):
 
 
 # ---------------------------------------------------------
+# 4. 노드 실행 시간 측정 데코레이터
+# ---------------------------------------------------------
+def measure_time(node_func):
+    def wrapper(state: QuantState):
+        start = time.perf_counter()
+        result = node_func(state)
+        end = time.perf_counter()
+
+        # 타이밍 데이터 업데이트
+        timings = state.get("node_timings", {})
+        node_name = node_func.__name__
+        timings[node_name] = round((end - start) * 1000, 2)  # ms 단위
+
+        if result is None: result = {}
+        result["node_timings"] = timings
+        return result
+
+    return wrapper
+
+
+# ---------------------------------------------------------
 # 4. LangGraph 노드 정의
 # ---------------------------------------------------------
 
-
+@measure_time
 def debate_agent_node(state: QuantState):
     """프롬프트 엔지니어링 강화: 페르소나 및 데이터 기반 분석 강제"""
     news = state["news_context"]
@@ -161,7 +215,7 @@ def debate_agent_node(state: QuantState):
     bear_op = llm.invoke([system_msg, HumanMessage(content=bear_p)]).content
     return {"bull_opinion": bull_op, "bear_opinion": bear_op, "retry_count": state.get("retry_count", 0)}
 
-
+@measure_time
 def judge_node(state: QuantState):
     """합의문 생성 및 Divergence 체크"""
     structured_llm = llm.with_structured_output(JudgeOutput)
@@ -180,7 +234,7 @@ def judge_node(state: QuantState):
         "divergence_note": res.divergence_note
     }
 
-
+@measure_time
 def evaluator_node(state: QuantState):
     """ 생성된 답변의 정확성과 관련성 평가"""
     structured_eval = llm.with_structured_output(EvalOutput)
@@ -207,7 +261,7 @@ def evaluator_node(state: QuantState):
         "retry_count": state.get("retry_count", 0) + 1
     }
 
-
+@measure_time
 def scenario_rag_node(state: QuantState):
     """ 검색 전략 조정 - 합의문 기반 고도화 검색"""
     # 단순 질문 검색이 아닌, 평가를 통과한 '합의문'을 검색 키워드로 사용
@@ -247,7 +301,7 @@ def scenario_rag_node(state: QuantState):
         "manager_view": view
     }
 
-
+@measure_time
 def quant_engine_node(state: QuantState):
     """LLM을 이용한 정량적 파라미터 미세 조정(Fine-tuning)"""
 
@@ -290,7 +344,7 @@ def quant_engine_node(state: QuantState):
 
         return {"expected_returns": [0.01] * 5}
 
-
+@measure_time
 def slsqp_optimizer_node(state: QuantState):
     """수학적 최적화로 최종 비중 산출"""
     mu = np.array(state.get("expected_returns", [0.01] * 5))
@@ -356,21 +410,41 @@ class AnalyzeRequest(BaseModel):
 
 @api_app.post("/analyze")
 async def analyze_market(request: AnalyzeRequest):
+    overall_start = time.perf_counter()
+
     # 가상의 뉴스 컨텍스트 및 지표 준비 (전처리)
 
     test_news = "2026-02-03 | 워시 연준 의장 후보 지명에 따른 금리 인하 기대감 혼조 및 환율 하락"
 
     try:
-        result = workflow_app.invoke({
+        initial_state = {
             "question": request.question,
             "news_context": test_news,
             "is_price_rising": True,
             "market_iv": 12.0,
-            "retry_count": 0
+            "retry_count": 0,
+            "node_timings": {}
+        }
+
+        result = workflow_app.invoke(initial_state)
+
+        overall_end = time.perf_counter()
+        total_latency = (overall_end - overall_start) * 1000
+
+        # 메트릭 저장
+        tracker.add_metric({
+            "latency": total_latency,
+            "eval_score": result.get("eval_score", 0),
+            "retry_count": result.get("retry_count", 0)
         })
+
 
         return {
             "status": "success",
+            "performance": {
+                "total_latency_ms": round(total_latency, 2),
+                "node_breakdown": result.get("node_timings")
+            },
             "evaluation": {
                 "final_score": result.get("eval_score"),
                 "total_attempts": result.get("retry_count"),
@@ -390,6 +464,14 @@ async def analyze_market(request: AnalyzeRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@api_app.get("/metrics")
+async def get_system_metrics():
+    """시스템 전체 성능 통계를 반환."""
+    stats = tracker.get_stats()
+    if not stats:
+        return {"message": "No data collected yet."}
+    return stats
 
 
 if __name__ == "__main__":
