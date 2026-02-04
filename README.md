@@ -26,7 +26,7 @@
 ---
 
 ### 2.3 Quant Engine & Optimisation
-- **Parameter Tuning**: RAG로 추출된 과거 통계값(Expected Return, Volatility)을 LLM이 현재 시장 상황에 맞춰 보정
+- **Parameter Tuning**: RAG로 추출된 과거 통계값(Expected Return, Volatility, Correlation)을 LLM이 현재 시장 상황에 맞춰 보정
 - **SLSQP Optimizer**: `scipy.optimize`를 사용하여 다음 제약 조건을 만족하는 샤프 지수 기반 최적 포트폴리오 산출
   - 각 자산 비중 제한: 0~45%
   - 총합 제약: 1.0
