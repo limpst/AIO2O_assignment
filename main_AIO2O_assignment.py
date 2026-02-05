@@ -279,7 +279,7 @@ def scenario_rag_node(state: QuantState):
 
 
 
-        f"- 기준 mu: {md['mu']}\n- 기준 vol: {md['vol']}- 기준 corr: {md['corr']}"
+        f"- 기준 mu: {md['mu']}\n- 기준 vol: {md['vol']}\n- 기준 corr: {md['corr']}"
 
     )
 
