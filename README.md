@@ -97,9 +97,5 @@ Request body:
 (참고) 데이터 소스
 금융 뉴스: LS 증권 Open API 기반 WebSocket 수신: https://openapi.ls-sec.co.kr/howto-sample
 
-### 로컬 LLM 서버 실행 예시
-````bash
-.\llama-server -m "V:\PythonProject\hf_cache_gguf\Llama-3.2-3B-Instruct-Q4_K_M.gguf" \
-  --port 8090 --host 0.0.0.0 -ngl 99 -c 8196 -fa auto --embedding --pooling mean
 
 
