@@ -123,10 +123,11 @@ A `PerformanceTracker` monitors system health and quality:
    - `http://localhost:8088/docs`
 
 ### Example Request
+'''json
 {
   "question": "How will the nomination of Kevin Warsh affect the KRX option market?"
 }
-
+'''
 
 
 # LLM Multi-Agent 기반 금융 RAG 및 포트폴리오 최적화 시스템
