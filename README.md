@@ -123,7 +123,6 @@ A `PerformanceTracker` monitors system health and quality:
    - `http://localhost:8088/docs`
 
 ### Example Request
-````json
 {
   "question": "How will the nomination of Kevin Warsh affect the KRX option market?"
 }
